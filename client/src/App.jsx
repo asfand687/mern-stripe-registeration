@@ -69,14 +69,16 @@ function App() {
           amount: 100,
         })
       })
-      const data = await response.json()
-      console.log(data)
+      if (response.ok) {
+        const data = await response.json()
+        console.log(data)
+      }
     } catch (error) {
       console.log(error.message)
     }
   }
 
-  console.log(stripeToken)
+
 
   return (
     <div>
