@@ -2,11 +2,13 @@ import { useState } from 'react'
 import './App.css'
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js"
+import StripeCheckout from "react-stripe-checkout"
 
-const stripePromise = loadStripe("pk_test_51HDEnkE5iIaQvU2gyf2aMVGWFQyAZHMnKFyUO9FufNjUt1Y7Erw0M6AFNKzli87AuPXutdhACoUts3zAnSRTfJ9J00gG5IrPWt")
+const key = import.meta.env.VITE_STRIPE
 
 function App() {
   const [clientSecret, setClientSecret] = useState("")
+  const [stripeToken, setStripeToken] = useState("")
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,25 +16,29 @@ function App() {
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvc, setCardCvc] = useState("");
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const response = await fetch("http://localhost:8080/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: username,
-        email: email,
-        password: password,
-        cardNumber: cardNumber,
-        cardExpiry: cardExpiry,
-        cardCvc: cardCvc,
-      }),
-    });
-    const { clientSecret } = await response.json();
-    setClientSecret(clientSecret);
-  };
+  const onToken = (token) => {
+    setStripeToken(token);
+  }
+
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   const response = await fetch("http://localhost:8080/register", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       username: username,
+  //       email: email,
+  //       password: password,
+  //       cardNumber: cardNumber,
+  //       cardExpiry: cardExpiry,
+  //       cardCvc: cardCvc,
+  //     }),
+  //   });
+  //   const { clientSecret } = await response.json();
+  //   setClientSecret(clientSecret);
+  // };
 
   const handleToken = async (token) => {
     const response = await fetch("http://localhost:8080/charge", {
@@ -49,6 +55,12 @@ function App() {
     const data = await response.json();
     console.log(data);
   };
+
+  const handleSubmit = async () => {
+
+  }
+
+  console.log(stripeToken)
 
   return (
     <div>
@@ -103,17 +115,20 @@ function App() {
         </label>
         <button type="submit">Register</button>
       </form>
-      {clientSecret && (
-        <Elements stripe={stripePromise}>
-          <StripeCheckout
-            handleToken={handleToken}
-            amount={1000}
-            currency="USD"
-            description="Registration fee"
-            clientSecret={clientSecret}
-          />
-        </Elements>
-      )}
+      <StripeCheckout
+        name="MD Hub"
+        image="https://mdhub.netlify.app/assets/logo-d7561ada.png"
+        billingAddress
+        shippingAddress
+        description={`Your total is $100`}
+        amount={100 * 100}
+        token={onToken}
+        stripeKey={key}
+      >
+        <button>
+          CHECKOUT NOW
+        </button>
+      </StripeCheckout>
     </div>
   );
 }
