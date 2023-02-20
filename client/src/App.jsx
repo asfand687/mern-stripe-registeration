@@ -40,24 +40,25 @@ function App() {
   //   setClientSecret(clientSecret);
   // };
 
-  const handleToken = async (token) => {
-    const response = await fetch("http://localhost:8080/charge", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        paymentMethodId: token.paymentMethod.id,
-        amount: 1000,
-        currency: "USD",
-      }),
-    });
-    const data = await response.json();
-    console.log(data);
-  };
+  // const handleToken = async (token) => {
+  //   const response = await fetch("http://localhost:8080/charge", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({
+  //       paymentMethodId: token.paymentMethod.id,
+  //       amount: 1000,
+  //       currency: "USD",
+  //     }),
+  //   });
+  //   const data = await response.json();
+  //   console.log(data);
+  // };
 
-  const handleSubmit = async () => {
-
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    const response = await fetch("http://localhost:8080/payment")
   }
 
   console.log(stripeToken)
