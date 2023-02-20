@@ -58,7 +58,22 @@ function App() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    const response = await fetch("http://localhost:8080/payment")
+    try {
+      const response = await fetch("http://localhost:8080/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          tokenId: stripeToken.id,
+          amount: 100,
+        })
+      })
+      const data = await response.json()
+      console.log(data)
+    } catch (error) {
+      console.log(error.message)
+    }
   }
 
   console.log(stripeToken)
