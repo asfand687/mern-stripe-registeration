@@ -17,29 +17,22 @@ app.get("/", (req, res) => {
 })
 
 // endpoint for creating a paymentIntent
-app.post('/register', async (req, res) => {
-  const { username, email, password, cardNumber, cardExpiry, cardCvc } = req.body;
+app.post('/get-client-secret', async (req, res) => {
+  const { username, email } = req.body;
 
   try {
     // Create a PaymentIntent with the user's card details
     const paymentIntent = await stripe.paymentIntents.create({
       amount: 1000, // Replace with the amount you want to charge in cents
-      currency: 'USD', // Replace with your preferred currency
-      payment_method_data: {
-        type: 'card',
-        card: {
-          number: cardNumber,
-          exp_month: cardExpiry.substring(0, 2),
-          exp_year: cardExpiry.substring(3, 5),
-          cvc: cardCvc,
-        },
-      },
+      currency: 'usd', // Replace with your preferred currency
+      automatic_payment_methods: { enabled: true },
       metadata: {
         username,
         email,
-        password,
       },
     });
+
+    console.log(paymentIntent)
 
     // Extract payment method ID from the PaymentIntent
     const paymentMethodId = paymentIntent.payment_method;
@@ -48,32 +41,12 @@ app.post('/register', async (req, res) => {
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
       paymentMethodId: paymentMethodId,
-    });
+    })
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 })
 
-// charge
-app.post('/charge', async (req, res) => {
-  const paymentMethodId = req.body.paymentMethodId;
-  const amount = 1000; // Replace with the amount you want to charge in cents
-  const currency = 'USD'; // Replace with your preferred currency
-
-  try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      payment_method: paymentMethodId,
-      amount: amount,
-      currency: currency,
-      confirm: true
-    });
-
-    res.status(200).send({ success: true });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({ error: error.message });
-  }
-});
 
 app.post("/payment", (req, res) => {
   stripe.charges.create(
@@ -91,6 +64,7 @@ app.post("/payment", (req, res) => {
     }
   );
 })
+
 
 app.listen(process.env.PORT, () => {
   console.log(`App listening on port: ${PORT}`)
