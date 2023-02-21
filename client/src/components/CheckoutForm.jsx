@@ -22,10 +22,8 @@ const CheckoutForm = () => {
       })
     })
 
-    const data = await response.json()
-    console.log(data)
-    console.log(elements.getElement(CardElement))
-    const paymentResult = await stripe.confirmCardPayment(data.clientSecret, {
+    const { clientSecret } = await response.json()
+    const paymentResult = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: elements.getElement(CardElement),
         billing_details: {
@@ -74,6 +72,7 @@ const CheckoutForm = () => {
               alignItems: "center",
             }}
           >
+            <input className="card" type="text" placeholder="username" />
             <CardElement
               className="card"
               options={{
@@ -89,7 +88,7 @@ const CheckoutForm = () => {
               className="pay-button"
               disabled={isPaymentLoading}
             >
-              {isPaymentLoading ? "Loading..." : "Pay"}
+              {isPaymentLoading ? "Loading..." : "Proceed With Payment"}
             </button>
           </div>
         </form>
