@@ -32,7 +32,6 @@ app.post('/get-client-secret', async (req, res) => {
       },
     });
 
-    console.log(paymentIntent)
 
     // Extract payment method ID from the PaymentIntent
     const paymentMethodId = paymentIntent.payment_method;
@@ -40,7 +39,6 @@ app.post('/get-client-secret', async (req, res) => {
     // Return client secret and payment method ID in response
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,
-      paymentMethodId: paymentMethodId,
     })
   } catch (error) {
     res.status(400).json({ error: error.message });
