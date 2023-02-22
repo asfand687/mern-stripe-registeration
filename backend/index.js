@@ -19,16 +19,17 @@ app.get("/", (req, res) => {
 
 // endpoint for creating a paymentIntent
 app.post('/get-client-secret', async (req, res) => {
-  const { username, email, paymentMethod } = req.body;
+  const { username, email, paymentMethod, customerId } = req.body;
 
   try {
     // Create a PaymentIntent with the user's card details
 
-    const customer = await stripe.customers.create({
-      description: `Customer for MDHub- ${email}`,
-      email: email,
-      name: username,
-      payment_method: paymentMethod
+    const customer = customerId ? { id: customerId } :
+      await stripe.customers.create({
+        description: `Customer for MDHub- ${email}`,
+        email: email,
+        name: username,
+        payment_method: paymentMethod
     })
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -92,13 +93,13 @@ app.post("/create-customer", async (req, res) => {
 })
 
 app.post("/get-card-digits", async (req, res) => {
+  const { customerId } = req.body
   try {
     const paymentMethod = await stripe.paymentMethods.list({
-      customer: "cus_NOqLFVnxZMSKEA",
+      customer: customerId,
       type: 'card'
     })
-    res.status(200).json(paymentMethod)
-
+    res.status(200).json(paymentMethod.data[0].card.last4)
   } catch (error) {
     res.status(500).json(error)
   }
