@@ -30,7 +30,8 @@ const CheckoutForm = () => {
           body: JSON.stringify({
             username,
             email,
-            paymentMethod: paymentMethod.id
+            paymentMethod: paymentMethod.id,
+            amount: 20000
           })
         })
 
