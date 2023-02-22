@@ -17,25 +17,42 @@ app.get("/", (req, res) => {
   res.send("Hello Express")
 })
 
+
+
 // endpoint for creating a paymentIntent
 app.post('/get-client-secret', async (req, res) => {
-  const { username, email, paymentMethod, customerId } = req.body;
+  const { username, email, paymentMethod, customerId, amount } = req.body;
 
   try {
     // Create a PaymentIntent with the user's card details
+    const getPaymentMethod = async (paymentMethodId) => {
+      if (paymentMethodId) {
+        return paymentMethodId
+      } else {
+        const paymentMethodList = await stripe.paymentMethods.list({
+          customer: customerId,
+          type: 'card'
+        })
+        const methodId = await paymentMethodList.data[0].id
+        return methodId
+      }
+    }
 
     const customer = customerId ? { id: customerId } :
-      await stripe.customers.create({
-        description: `Customer for MDHub- ${email}`,
-        email: email,
-        name: username,
-        payment_method: paymentMethod
-    })
+      (
+        await stripe.customers.create({
+          description: `Customer for MDHub- ${email}`,
+          email: email,
+          name: username,
+          payment_method: paymentMethod
+        })
+      )
+
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 10000, // Replace with the amount you want to charge in cents
+      amount: amount, // Replace with the amount you want to charge in cents
       currency: 'usd', // Replace with your preferred currency,
-      payment_method: paymentMethod,
+      payment_method: await getPaymentMethod(paymentMethod),
       customer: customer.id,
       setup_future_usage: "on_session",
       confirm: true,
