@@ -2,6 +2,9 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import React, { useState } from 'react'
 
 const CheckoutForm = () => {
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("")
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const stripe = useStripe();
   const elements = useElements();
@@ -10,39 +13,38 @@ const CheckoutForm = () => {
     if (!stripe || !elements) {
       return;
     }
-    setPaymentLoading(true);
-    const response = await fetch("http://localhost:8080/get-client-secret", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username: "Jared Leto",
-        email: "jared@gmail.com"
-      })
-    })
+    try {
+      setPaymentLoading(true);
 
-    const { clientSecret } = await response.json()
-    const paymentResult = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
         card: elements.getElement(CardElement),
-        billing_details: {
-          name: "Jared Leto",
-          address: "114 St John Street, Montreal, Quebec"
-        },
-      },
-    })
+      });
 
-    setPaymentLoading(false)
+      if (!error) {
+        const response = await fetch("http://localhost:8080/get-client-secret", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            email,
+            paymentMethod: paymentMethod.id
+          })
+        })
 
-    if (paymentResult.error) {
-      alert(paymentResult.error.message);
-    } else {
-      if (paymentResult.paymentIntent.status === "succeeded") {
-        alert("Success!");
+        const data = await response.json()
+        setPaymentLoading(false)
+        if (data.status === "succeeded") {
+          alert("Payment Succesful")
+        } else {
+          alert("Payment Unsuccesful")
+        }
       }
+    } catch (error) {
+      console.log(error)
     }
-
   }
 
 
@@ -72,7 +74,9 @@ const CheckoutForm = () => {
               alignItems: "center",
             }}
           >
-            <input className="card" type="text" placeholder="username" />
+            <input value={username} onChange={({ target }) => setUsername(target.value)} className="card" type="text" placeholder="username" />
+            <input value={password} onChange={({ target }) => setPassword(target.value)} className="card" type="password" placeholder="password" />
+            <input value={email} onChange={({ target }) => setEmail(target.value)} className="card" type="email" placeholder="email" />
             <CardElement
               className="card"
               options={{
