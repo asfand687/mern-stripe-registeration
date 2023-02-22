@@ -5,9 +5,7 @@ const userSchema = new mongoose.Schema({
   username: String,
   password: String,
   email: String,
-  cardNumber: String,
-  cardExpiry: String,
-  cardCvc: String,
+  stripe_customer_id: String,
 })
 
 const User = mongoose.model('User', userSchema)
